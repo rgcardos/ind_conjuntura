@@ -1,0 +1,388 @@
+---
+title: "Indicadores de Conjuntura Econômica | Indústria de Alimentos"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Carrega as bibliotecas necessárias para o projeto
+library(tidyverse)
+
+
+```
+
+
+```{css, echo = FALSE}
+
+# Define algumas regras de formatação CSS ao arquivo
+
+body{font-family: Roboto; font-size: 12pt;}
+
+h1.title{font-family: Roboto; font-size: 16pt; font-weight: bold; color: #377B5D;}
+
+h1,h2,h3,h4,h5,h6{font-family: Roboto; font-size: 14pt; font-weight: bold; color: #377B5D;}
+
+#cores - #214D3D, #377B5D, #75BA62, #D9ED92, #50B2C0
+  
+```
+
+
+```{r tema_ggplot, include=FALSE}
+
+# Cria e define um tema padrão para o ggplot
+
+theme_roboto <- function(base_size = 11,
+                         strip_text_size = 12,
+                         strip_text_margin = 5,
+                         subtitle_size = 10,
+                         subtitle_margin = 10,
+                         plot_title_size = 16,
+                         plot_title_margin = 10,
+                         ...) {
+  ret <- ggplot2::theme_minimal(base_family = "RobotoCondensed-Regular",
+                                base_size = base_size, ...)
+  ret$strip.text <- ggplot2::element_text(hjust = 0, size=strip_text_size,
+                                          margin=margin(b=strip_text_margin),
+                                          family="Roboto-Bold")
+  ret$plot.subtitle <- ggplot2::element_text(hjust = 0, size=subtitle_size,
+                                             margin=margin(b=subtitle_margin),
+                                             family="RobotoCondensed-Regular")
+  ret$plot.title <- ggplot2::element_text(hjust = 0, size = plot_title_size,
+                                          margin=margin(b=plot_title_margin),
+                                          family="Roboto-Bold")
+  ret
+}
+
+ggplot2::theme_set(theme_roboto())
+
+```
+
+# 1. Introdução
+
+O desempenho da economia brasileira pode ser acompanhado através de diversos indicadores disponibilizados de forma gratuita por entidades públicas e privadas. Em geral estes indicadores são amplamente divulgados pela impresa, mas seria possível com os dados brutos disponíveis focar a avaliação em determinado setor da economia, ou em uma determinada região? Os dados apresentados aqui estão filtrados sob a ótica específica da indústria de alimentos com foco principal na Região Sudeste, embora alguns dados tenham abragência nacional pela limitação da própria agragação dos dados na base original.
+
+# 2. PIB
+
+Os dados do PIB são divulgados pelo IBGE e possuem periodicidade trimestral. O produto interno bruto mede, a preços de mercado, o total dos bens e serviços produzidos pelas unidades produtoras estabelecidas no território econômico do país e destinado a usos finais. Das componentes do cálculo do PIB, pela ótica do produto analisamos a evolução do índice para agropecuária, industria e serviços. Já sob a ótica da despesa será avaliada a despesa de consumo das famílias. 
+
+
+```{r importacao_dados_pib, message=FALSE, warning=FALSE, include=FALSE}
+
+# Ler os dados do PIB através de conexão ao IBGE
+
+# Definião APIs para conexão SIDRA
+
+## PIB geral
+api_pib <- "/t/5932/n1/all/v/6561,6563,6564/p/all/c11255/90707/d/v6561%201,v6563%201,v6564%201"
+
+## Componentes do PIB: comércio, serviços e industria
+api_pib_csi <- "/t/5932/n1/all/v/6561,6563,6564/p/all/c11255/90687,90691,90696/d/v6561%201,v6563%201,v6564%201"
+
+## Componentes do PIB:consumo das familias
+api_pib_cf <- "/t/5932/n1/all/v/6561,6563,6564/p/all/c11255/93404/d/v6561%201,v6563%201,v6564%201"
+
+
+# Importacao do dados
+
+## PIB geral
+pib <- sidrar::get_sidra(api = api_pib) %>% 
+  janitor::clean_names() %>%
+  as_tibble() %>% 
+  select(trimestre_codigo, setores_e_subsetores, variavel, valor) %>%
+  mutate(trimestre = lubridate::yq(trimestre_codigo)) %>%
+  #mutate(trimestre = lubridate::ceiling_date(trimestre, unit = "quarter")-1) %>%
+  select(trimestre, setores_e_subsetores, variavel, valor)
+
+## Componentes do PIB: comércio, serviços e industria
+
+pib_csi <- sidrar::get_sidra(api = api_pib_csi) %>% 
+  janitor::clean_names() %>%
+  as_tibble() %>% 
+  select(trimestre_codigo, setores_e_subsetores, variavel, valor) %>%
+  mutate(trimestre = lubridate::yq(trimestre_codigo)) %>%
+  #mutate(trimestre = lubridate::ceiling_date(trimestre, unit = "quarter")-1) %>%
+  select(trimestre, setores_e_subsetores, variavel, valor)
+
+## Componentes do PIB:consumo das familias
+
+pib_cf <- sidrar::get_sidra(api = api_pib_cf) %>% 
+  janitor::clean_names() %>%
+  as_tibble() %>% 
+  select(trimestre_codigo, setores_e_subsetores, variavel, valor) %>%
+  mutate(trimestre = lubridate::yq(trimestre_codigo)) %>%
+  #mutate(trimestre = lubridate::ceiling_date(trimestre, unit = "quarter")-1) %>%
+  select(trimestre, setores_e_subsetores, variavel, valor)
+
+rm(api_pib, api_pib_cf, api_pib_csi)
+
+```
+
+
+A variação trimestral do PIB em relação ao mesmo período do ano anterior pode ser acompanhada no gráfico abaixo:
+<hr>
+```{r pib, echo=FALSE, fig.width=10}
+
+# Gráfico da variação trimestral do PIB em relação ao ano anterior
+
+pib %>%
+  filter(trimestre >= "2018-01-01") %>%
+  filter(variavel == "Taxa trimestral (em relação ao mesmo período do ano anterior)") %>% 
+  
+  ggplot(aes(trimestre, valor))+
+  geom_col(fill = "#50B2C0")+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Variação Trimestral",
+       subtitle = "Em relação ao mesmo período do ano anterior",
+       caption = "Fonte: IBGE, tabela 5932 SIDRA")+
+  xlab(label = "Trimestre")+
+  ylab(label = "Variação %")
+  
+```
+<hr>
+
+Dos componentes do PIB, quando delimitadas pela ótica do produto podemos obter a evolução para o comércio, serviço e indústria. Uma quarta variável que seriam os impostos não foi analisada. O gráfico com a variação trimestral em relação ao mesmo período do ano anterior demonstra como o setor da agropecuária brasileira conseguiu se manter imune a crise apesar do impacto da epidemia COVID-19.
+
+<hr>
+```{r pib_csi, echo=FALSE, , fig.width=10}
+
+# Gráfico do PIB para indústria, comércio e serviços
+
+pib_csi %>%
+  filter(trimestre >= "2018-01-01") %>%
+  filter(variavel == "Taxa trimestral (em relação ao mesmo período do ano anterior)") %>%
+  mutate(setores_e_subsetores = case_when(
+    setores_e_subsetores == "Agropecuária - total" ~ "Agropecuária",
+    setores_e_subsetores == "Indústria - total" ~ "Indústria",
+    TRUE ~ "Serviços"
+  )) %>%
+  
+  ggplot(aes(trimestre, valor))+
+  geom_col(fill = "#50B2C0")+
+  facet_wrap(vars(setores_e_subsetores))+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Segmentos | Variação Trimestral",
+       subtitle = "Em relação ao mesmo período do ano anterior",
+       caption = "Fonte: IBGE, tabela 5932 SIDRA")+
+  xlab(label = "Trimestre")+
+  ylab(label = "Variação %")
+
+
+```
+<hr>
+
+Outro aspecto interessante que pode ser extraído das informações disponíveis da base de dados do IBGE são as despesas de consumo das famílias. A despesa das famílias com consumo final é igual ao valor gasto por elas com a aquisição de bens e serviços usados para atender a suas necessidades e desejos. Essa despesa não inclui a compra de bens de capital como máquinas e imóveis (formação bruta de capital fixo) nem a de bens de valor, como joias e obras de arte (consideradas como “reservas de valor”). A variação trimestral do consumo das famílias em relação ao mesmo trimestre do ano anterior econtra-se disponível no gráfico abaixo:
+
+<hr>
+```{r pib_cf, echo=FALSE, fig.width=10}
+
+# Gráfico do consumo das famílias em relação ao PIB
+
+pib_cf %>%
+  filter(trimestre >= "2018-01-01") %>%
+  filter(variavel == "Taxa trimestral (em relação ao mesmo período do ano anterior)") %>% 
+  
+  ggplot(aes(trimestre, valor))+
+  geom_col(fill = "#50B2C0")+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Consumo das Famílias | Variação Trimestral",
+       subtitle = "Em relação ao mesmo período do ano anterior",
+       caption = "Fonte: IBGE, tabela 5932 SIDRA")+
+  xlab(label = "Trimestre")+
+  ylab(label = "Variação %")
+  
+```
+<hr>
+<br>
+
+# 3. Vendas de Supermercados e Hipermercados
+
+A variação da receita e volume de vendas de supermercados e hipermercados pode ser obtida através da pesquisa mensal do comércio sendo realizada com periodicidade mensal pelo IBGE. Os próximos dois gráficos representam a variação da receita e volume em relação ao mesmo período do ano anterior para as quatro unidades da federação da região sudeste.
+
+```{r dados_pmc_rob, message=FALSE, warning=FALSE, include=FALSE}
+
+# Extração dos Dados Mensais Pesquisa Comércio IBGE, receita bruta
+## Dados extraidos API - Tabela 3418 SIDRA
+## Indice de **Receita**
+## Supermercados e Hipermercados
+## UF: MG/RJ/ES/SP
+
+
+pmc_sup_indice_uf_rob <- sidrar::get_sidra(
+  api = "/t/3418/n3/31,32,33,35/v/565/p/all/c11046/90668/c85/103154/d/v565%201") %>%
+  janitor::clean_names() %>%
+  as_tibble()
+
+pmc_sup_indice_uf_rob <- pmc_sup_indice_uf_rob %>%
+  select(unidade_da_federacao, tipos_de_indice, mes_codigo, valor) %>%
+  mutate(data = lubridate::ym(mes_codigo)) %>%
+  select(-mes_codigo) %>% 
+  drop_na(valor)
+
+```
+<hr>
+```{r graf_pmc_rob, echo=FALSE, fig.width=10}
+
+# Gráfico da evolução da receita para supermercados e hipermercados
+
+pmc_sup_indice_uf_rob %>%
+  filter(data >= "2018-01-01") %>%
+  
+  ggplot(aes(data, valor))+
+  geom_col(fill = "#50B2C0")+
+  facet_wrap(vars(unidade_da_federacao))+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Índice de Receita Nominal de Vendas | Supermercados e Hipermercados",
+       subtitle = "Variação em relação ao mesmo período do ano anterior",
+       caption = "Fonte: IBGE, tabela 3418 SIDRA")+
+  xlab(label = "Mês")+
+  ylab(label = "Variação %")
+
+```
+
+```{r dados_pmc_vol, include=FALSE}
+
+# Dados Mensais Pesquisa Comércio IBGE, receita bruta
+## Dados extraidos API - Tabela 3418 SIDRA
+## Indice de **Volume**
+## Supermercados e Hipermercados
+## UF: MG/RJ/ES/SP
+
+pmc_sup_indice_uf_vol <- sidrar::get_sidra(
+  api = "/t/3418/n3/31,32,33,35/v/564/p/all/c11046/90668/c85/103154/d/v564%201") %>%
+  janitor::clean_names() %>%
+  as_tibble()
+
+pmc_sup_indice_uf_vol <- pmc_sup_indice_uf_vol %>%
+  select(unidade_da_federacao, tipos_de_indice, mes_codigo, valor) %>%
+  mutate(data = lubridate::ym(mes_codigo)) %>%
+  select(-mes_codigo) %>% 
+  drop_na(valor)
+
+```
+
+<hr>
+```{r graf_pmc_vol, echo=FALSE, fig.width=10}
+
+# Gráfico para evolução do volume de vendas, supermercados e hipermercados
+
+pmc_sup_indice_uf_vol %>%
+  filter(data >= "2018-01-01") %>%
+  
+  ggplot(aes(data, valor))+
+  geom_col(fill = "#50B2C0")+
+  facet_wrap(vars(unidade_da_federacao))+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Índice de Volume Nominal de Vendas | Supermercados e Hipermercados",
+       subtitle = "Variação em relação ao mesmo período do ano anterior",
+       caption = "Fonte: IBGE, tabela 3418 SIDRA")+
+  xlab(label = "Mês")+
+  ylab(label = "Variação %")
+
+
+```
+<hr>
+
+# 4. Desempenho da Indústria de Alimentos
+
+O desempenho da indústria de alimentos no Brasil pode ser acompanhado através da pesquisa mensal da indústria disponibilizada pelo IBGE. O resultado da pesquisa é disponibilizado com segmentação por CNAE de forma que, para este relatório os dados se referem somente ao CNAE relacionado a fabricação de produtos alimentícios. Além disso os dados foram filtrados para as unidades da federação da região sudeste. A pesquisa industrial mensal transforma os dados em índice relacionado à produção física das unidades pesquisadas e, portanto, não representam a evolução do faturamento das mesmas. O principal objetivo do índice é servir como uma medida aproximada da evolução de curto prazo do valor adicionado da indústria.
+
+```{r dados_pmi, include=FALSE}
+
+## Importação tabela IBGE 3653 - SIDRA
+
+### Parâmetros selecionados:
+### Variável : Variação Percentual em relação ao mesmo período do ano anterior
+### Atividade: Seção 3.10 - Fabricação de Produtos Alimentícios
+### Período: Todos
+### UF: MG/SP/RJ/ES
+
+api_sidra <- "/t/3653/n3/31,32,33,35/v/3139/p/all/c544/129317/d/v3139%201"
+
+pmi_sidra <- sidrar::get_sidra(api = api_sidra) %>%
+  janitor::clean_names() %>%
+  as_tibble() %>%
+  drop_na(valor) %>%
+  select(data = mes_codigo, variavel, uf = unidade_da_federacao, valor)
+
+```
+<hr>
+```{r graf_pmi, echo=FALSE, fig.width=10}
+
+# Gráfico para evolução do volume na indústria brasileira
+
+pmc_sup_indice_uf_vol %>%
+  filter(data >= "2018-01-01") %>%
+  
+  ggplot(aes(data, valor))+
+  geom_col(fill = "#50B2C0")+
+  facet_wrap(vars(unidade_da_federacao))+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Índice de Volume | Indústria de Alimentos",
+       subtitle = "Variação em relação ao mesmo período do ano anterior",
+       caption = "Fonte: IBGE, tabela 3418 SIDRA")+
+  xlab(label = "Mês")+
+  ylab(label = "Variação %")
+
+
+```
+<hr>
+
+# 5. Índice de Inflação
+
+O índice de inflação escolhido para acompanhamento foi o INPC. A população-objetivo do INPC abrange as famílias com rendimentos de 1 a 5 salários mínimos, cuja pessoa de referência é assalariada. Nesta faixa etária o grupo alimentos corresponde a uma importante parcela do orçamento familiar. Em momentos de recessão econômica acompanhada de aceleração nos preços de alimentos teremos uma pressão por inclusão de marcas e produtos mais baratos na cesta de consumo desta população. O gráfico abaixo compara a inflação do grupo alimentos com o índice IPCA completo.
+
+```{r inpc, include=FALSE}
+
+# Importação dados inflação, INPC
+# Tabela SIDRA, 7063
+
+
+api_sidra <- "/t/7063/n7/3101,3301,3501,3201/v/44/p/all/c315/7169,7171/d/v44%202"
+
+inpc <- sidrar::get_sidra(api = api_sidra) %>%
+  janitor::clean_names() %>%
+  as_tibble()
+
+inpc <- inpc %>%
+  select(data = mes_codigo,
+         grupo = geral_grupo_subgrupo_item_e_subitem,
+         cidade = regiao_metropolitana,
+         variavel,
+         valor) %>%
+  mutate(data = lubridate::ym(data)) %>%
+  mutate(grupo = stringr::str_extract(grupo, "[:UPPER:].+")) %>%
+  mutate(cidade = stringr::str_remove(cidade, "[:blank:]\\([:upper:]{2}\\)")) %>%
+  mutate(grupo = stringr::str_remove(grupo, "[:blank:]-")) %>%
+  mutate(grupo = stringr::str_squish(grupo)) %>%
+  mutate(grupo = stringr::str_squish(grupo)) %>%
+  drop_na(valor)
+
+
+inpc <- inpc %>% 
+  group_by(data, grupo) %>% 
+  summarize(valor = mean(valor))
+
+```
+<hr>
+```{r graf_inpc, echo=FALSE, fig.width=10}
+
+# Gráfico inflação alimentos x inflação geral INPC
+
+inpc %>% ggplot(aes(data, valor, fill = grupo))+
+  geom_col(position = "dodge")+
+  scale_x_date(date_breaks = "1 year",labels = scales::date_format("%Y"))+
+  labs(title = "Inflação INPC",
+       subtitle = "Variação mensal (Alimentação e Índice Geral)",
+       caption = "Fonte: IBGE, tabela 7063 SIDRA",
+       fill = "Grupo")+
+  xlab(label = "Mês")+
+  ylab(label = "Variação %")+
+  scale_fill_manual(values = c("#50B2C0", "#D9ED92"))
+
+```
+<br>
+<hr>
+# 4. Conclusão
+
+Através dos indicadores aqui apresentados podemos fazer um acompanhamento do desempenho da indústria alimentícia na economia brasileira. Este relatório foi criado a partir de um script em `Rmarkdown` que automatiza todo o processo de acesso e coleta de dados junto a base de dados do IBGE.
