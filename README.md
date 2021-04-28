@@ -1,20 +1,6 @@
 Indicadores de Conjuntura Econômica \| Indústria de Alimentos
 ================
 
-<style type="text/css">
-
-# Define algumas regras de formatação CSS ao arquivo
-
-body{font-family: Roboto; font-size: 12pt;}
-
-h1.title{font-family: Roboto; font-size: 16pt; font-weight: bold; color: #377B5D;}
-
-h1,h2,h3,h4,h5,h6{font-family: Roboto; font-size: 14pt; font-weight: bold; color: #377B5D;}
-
-#cores - #214D3D, #377B5D, #75BA62, #D9ED92, #50B2C0
-  
-</style>
-
 # 1. Introdução
 
 O desempenho da economia brasileira pode ser acompanhado através de
