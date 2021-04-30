@@ -106,6 +106,7 @@ rm(api_pib, api_pib_cf, api_pib_csi)
 
 A variação trimestral do PIB em relação ao mesmo período do ano anterior pode ser acompanhada no gráfico abaixo:
 <hr>
+
 ```{r pib, echo=FALSE, fig.width=10}
 
 # Gráfico da variação trimestral do PIB em relação ao ano anterior
@@ -124,11 +125,13 @@ pib %>%
   ylab(label = "Variação %")
   
 ```
+
 <hr>
 
 Dos componentes do PIB, quando delimitadas pela ótica do produto podemos obter a evolução para o comércio, serviço e indústria. Uma quarta variável que seriam os impostos não foi analisada. O gráfico com a variação trimestral em relação ao mesmo período do ano anterior demonstra como o setor da agropecuária brasileira conseguiu se manter imune a crise apesar do impacto da epidemia COVID-19.
 
 <hr>
+
 ```{r pib_csi, echo=FALSE, , fig.width=10}
 
 # Gráfico do PIB para indústria, comércio e serviços
@@ -154,11 +157,13 @@ pib_csi %>%
 
 
 ```
+
 <hr>
 
 Outro aspecto interessante que pode ser extraído das informações disponíveis da base de dados do IBGE são as despesas de consumo das famílias. A despesa das famílias com consumo final é igual ao valor gasto por elas com a aquisição de bens e serviços usados para atender a suas necessidades e desejos. Essa despesa não inclui a compra de bens de capital como máquinas e imóveis (formação bruta de capital fixo) nem a de bens de valor, como joias e obras de arte (consideradas como “reservas de valor”). A variação trimestral do consumo das famílias em relação ao mesmo trimestre do ano anterior econtra-se disponível no gráfico abaixo:
 
 <hr>
+
 ```{r pib_cf, echo=FALSE, fig.width=10}
 
 # Gráfico do consumo das famílias em relação ao PIB
@@ -177,6 +182,7 @@ pib_cf %>%
   ylab(label = "Variação %")
   
 ```
+
 <hr>
 <br>
 
@@ -205,7 +211,9 @@ pmc_sup_indice_uf_rob <- pmc_sup_indice_uf_rob %>%
   drop_na(valor)
 
 ```
+
 <hr>
+
 ```{r graf_pmc_rob, echo=FALSE, fig.width=10}
 
 # Gráfico da evolução da receita para supermercados e hipermercados
@@ -247,6 +255,7 @@ pmc_sup_indice_uf_vol <- pmc_sup_indice_uf_vol %>%
 ```
 
 <hr>
+
 ```{r graf_pmc_vol, echo=FALSE, fig.width=10}
 
 # Gráfico para evolução do volume de vendas, supermercados e hipermercados
@@ -266,6 +275,7 @@ pmc_sup_indice_uf_vol %>%
 
 
 ```
+
 <hr>
 
 # 4. Desempenho da Indústria de Alimentos
@@ -291,7 +301,9 @@ pmi_sidra <- sidrar::get_sidra(api = api_sidra) %>%
   select(data = mes_codigo, variavel, uf = unidade_da_federacao, valor)
 
 ```
+
 <hr>
+
 ```{r graf_pmi, echo=FALSE, fig.width=10}
 
 # Gráfico para evolução do volume na indústria brasileira
@@ -311,6 +323,7 @@ pmc_sup_indice_uf_vol %>%
 
 
 ```
+
 <hr>
 
 # 5. Índice de Inflação
@@ -349,7 +362,9 @@ inpc <- inpc %>%
   summarize(valor = mean(valor))
 
 ```
+
 <hr>
+
 ```{r graf_inpc, echo=FALSE, fig.width=10}
 
 # Gráfico inflação alimentos x inflação geral INPC
@@ -366,8 +381,10 @@ inpc %>% ggplot(aes(data, valor, fill = grupo))+
   scale_fill_manual(values = c("#50B2C0", "#D9ED92"))
 
 ```
+
 <br>
 <hr>
+
 # 4. Conclusão
 
 Através dos indicadores aqui apresentados podemos fazer um acompanhamento do desempenho da indústria alimentícia na economia brasileira. Este relatório foi criado a partir de um script em `Rmarkdown` que automatiza todo o processo de acesso e coleta de dados junto a base de dados do IBGE.

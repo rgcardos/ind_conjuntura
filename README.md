@@ -26,7 +26,9 @@ evolução do índice para agropecuária, industria e serviços. Já sob a
 A variação trimestral do PIB em relação ao mesmo período do ano anterior
 pode ser acompanhada no gráfico abaixo:
 <hr>
+
 ![](README_files/figure-gfm/pib-1.png)<!-- -->
+
 <hr>
 
 Dos componentes do PIB, quando delimitadas pela ótica do produto podemos
@@ -37,7 +39,9 @@ demonstra como o setor da agropecuária brasileira conseguiu se manter
 imune a crise apesar do impacto da epidemia COVID-19.
 
 <hr>
+
 ![](README_files/figure-gfm/pib_csi-1.png)<!-- -->
+
 <hr>
 
 Outro aspecto interessante que pode ser extraído das informações
@@ -52,7 +56,9 @@ relação ao mesmo trimestre do ano anterior econtra-se disponível no
 gráfico abaixo:
 
 <hr>
+
 ![](README_files/figure-gfm/pib_cf-1.png)<!-- -->
+
 <hr>
 
 <br>
@@ -71,7 +77,9 @@ sudeste.
 ![](README_files/figure-gfm/graf_pmc_rob-1.png)<!-- -->
 
 <hr>
+
 ![](README_files/figure-gfm/graf_pmc_vol-1.png)<!-- -->
+
 <hr>
 
 # 4. Desempenho da Indústria de Alimentos
@@ -89,7 +97,9 @@ servir como uma medida aproximada da evolução de curto prazo do valor
 adicionado da indústria.
 
 <hr>
+
 ![](README_files/figure-gfm/graf_pmi-1.png)<!-- -->
+
 <hr>
 
 # 5. Índice de Inflação
@@ -105,7 +115,10 @@ gráfico abaixo compara a inflação do grupo alimentos com o índice IPCA
 completo.
 
 <hr>
-![](README_files/figure-gfm/graf_inpc-1.png)<!-- --> <br>
+
+![](README_files/figure-gfm/graf_inpc-1.png)<!-- -->
+
+<br>
 <hr>
 
 # 4. Conclusão
